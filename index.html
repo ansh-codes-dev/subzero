@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SubZero - Minimalist, local-first recurring subscription and expense tracker.">
+  <title>SubZero | Subscription Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-mark" aria-hidden="true">SZ</div>
+        <div class="brand-text">
+          <h1>SubZero</h1>
+          <span class="brand-tag">Expense Engine</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="currency-toggle" class="btn btn-secondary" type="button" aria-label="Toggle currency between INR and USD">
+          <span id="currency-label">$ USD</span>
+        </button>
+        <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle visual theme">
+          <span id="theme-icon" aria-hidden="true">☀</span>
+        </button>
+        <button id="btn-add-modal" class="btn btn-primary" type="button">
+          <span>+ Add Service</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="stats-grid" aria-label="Subscription analytics overview">
+        <article class="stat-card">
+          <div class="stat-meta">
+            <span class="stat-label">Monthly Burn</span>
+            <span class="stat-badge burn-badge">Active</span>
+          </div>
+          <div class="stat-value" id="stat-monthly-burn">0.00</div>
+          <div class="stat-subtext">Estimated aggregate per month</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-meta">
+            <span class="stat-label">Yearly Projected</span>
+            <span class="stat-badge">Annualized</span>
+          </div>
+          <div class="stat-value" id="stat-yearly-projected">0.00</div>
+          <div class="stat-subtext">Run rate (Monthly × 12)</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-meta">
+            <span class="stat-label">Active Count</span>
+            <span class="stat-badge count-badge">Subs</span>
+          </div>
+          <div class="stat-value" id="stat-active-count">0</div>
+          <div class="stat-subtext">Tracked active recurring items</div>
+        </article>
+      </section>
+
+      <section class="budget-panel" aria-label="Budget cap tracking">
+        <div class="budget-header">
+          <div class="budget-info">
+            <span class="budget-title">Monthly Budget Allocation</span>
+            <div class="budget-meta">
+              <span id="budget-usage-text">0.00 of 0.00 used</span>
+              <span id="budget-pct-text" class="budget-pct">0%</span>
+            </div>
+          </div>
+          <div class="budget-setting">
+            <label for="budget-input">Cap (<span class="currency-symbol">$</span>):</label>
+            <input type="number" id="budget-input" min="1" step="any" aria-label="Set monthly budget cap">
+          </div>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="budget-progress-container">
+          <div class="progress-fill" id="budget-progress-bar" style="width: 0%;"></div>
+        </div>
+      </section>
+
+      <section class="toolbar-section" aria-label="Filters and search">
+        <div class="category-filters" role="tablist" aria-label="Filter by service category">
+          <button type="button" class="filter-chip active" data-category="All" role="tab" aria-selected="true">All</button>
+          <button type="button" class="filter-chip" data-category="Streaming" role="tab" aria-selected="false">Streaming</button>
+          <button type="button" class="filter-chip" data-category="Dev & Cloud" role="tab" aria-selected="false">Dev & Cloud</button>
+          <button type="button" class="filter-chip" data-category="Gaming" role="tab" aria-selected="false">Gaming</button>
+          <button type="button" class="filter-chip" data-category="Utilities" role="tab" aria-selected="false">Utilities</button>
+        </div>
+
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="8.5" cy="8.5" r="5.5" />
+            <line x1="12.5" y1="12.5" x2="17" y2="17" />
+          </svg>
+          <input type="search" id="search-input" placeholder="Search services..." aria-label="Search subscriptions by title or category">
+        </div>
+      </section>
+
+      <section class="listings-section" aria-label="Subscription items">
+        <div id="sub-grid" class="sub-grid"></div>
+
+        <div id="empty-state" class="empty-state hidden">
+          <div class="empty-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="4" width="18" height="16" rx="3" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+              <line x1="7" y1="15" x2="11" y2="15" />
+            </svg>
+          </div>
+          <h2 class="empty-title">No subscriptions found</h2>
+          <p class="empty-desc">No services match your active filters or search terms. Add a new subscription or adjust your query.</p>
+          <button type="button" id="btn-empty-add" class="btn btn-secondary">+ Add Service</button>
+        </div>
+      </section>
+
+      <section class="backup-section" aria-label="Data backup and portability">
+        <div class="backup-info">
+          <span class="backup-label">Local Data Storage</span>
+          <span class="backup-subtext">All metrics persist locally in your browser sandbox.</span>
+        </div>
+        <div class="backup-actions">
+          <button type="button" id="btn-export" class="btn btn-secondary">Export JSON</button>
+          <button type="button" id="btn-import" class="btn btn-secondary">Import Backup</button>
+          <input type="file" id="import-file-input" accept="application/json,.json" hidden>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-meta">
+        <span>SubZero</span>
+        <span class="footer-dot">•</span>
+        <span>Zero-Cloud Personal Finance</span>
+      </div>
+      <div class="footer-status">
+        <span class="status-indicator" aria-hidden="true"></span>
+        <span>Local Database Synced</span>
+      </div>
+    </footer>
+  </div>
+
+  <dialog id="sub-modal" class="modal-dialog">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Subscription</h2>
+        <button type="button" id="modal-close-icon" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="sub-form" method="dialog" class="modal-form">
+        <div class="form-group">
+          <label for="sub-name">Service Name</label>
+          <input type="text" id="sub-name" name="name" required placeholder="e.g., GitHub Copilot" autocomplete="off">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="sub-cost">Cost</label>
+            <input type="number" id="sub-cost" name="cost" required min="0.01" step="any" placeholder="10.00">
+          </div>
+          <div class="form-group flex-1">
+            <label for="sub-currency">Currency</label>
+            <select id="sub-currency" name="currency">
+              <option value="USD">USD ($)</option>
+              <option value="INR">INR (₹)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="sub-cycle">Billing Cycle</label>
+            <select id="sub-cycle" name="cycle">
+              <option value="Monthly">Monthly</option>
+              <option value="Yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="sub-category">Category</label>
+            <select id="sub-category" name="category">
+              <option value="Streaming">Streaming</option>
+              <option value="Dev & Cloud">Dev & Cloud</option>
+              <option value="Gaming">Gaming</option>
+              <option value="Utilities">Utilities</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="sub-date">Next Due Date</label>
+          <input type="date" id="sub-date" name="dueDate" required>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="modal-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Subscription</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
